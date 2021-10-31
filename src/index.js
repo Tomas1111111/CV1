@@ -1,7 +1,6 @@
 import "./styles.css"; // keep this here!
 
-// Let's write (or copy-paste 😏) our code below this line ↓
-
+// naimportujte vše co je potřeba z BabylonJS
 import {
   Engine,
   Scene,
@@ -13,69 +12,57 @@ import {
   Color3
 } from "@babylonjs/core";
 
-// Get the canvas element and resize it to cover the full window
+//canvas je grafické okno, to rozáhneme přes obrazovku
 const canvas = document.getElementById("renderCanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// In the previous examples this was called "renderer"
 const engine = new Engine(canvas, true);
 
-// Create the scene
+//scéna
 const scene = new Scene(engine);
 
-// Add a camera called "Camera" 🤓, and move it back 5 units
-const camera = new UniversalCamera("Camera", new Vector3(0, 0, 5), scene);
+//vytoření kamery v pozici -5 (dozadu)
+const camera = new UniversalCamera("Camera", new Vector3(0, 0, 6), scene);
 
-// Point the camera towards the scene origin
+//zaměřit kameru do středu
 camera.setTarget(Vector3.Zero());
 
-// And finally attach it to the canvas
+//spojení kamery a grafikcého okna
 camera.attachControl(canvas, true);
 
-// Create a 1x1 cube
-// Note: there is an odler method called simply "Mesh". It is recommended
-// to use the newer "MeshBuilder" instead.
-const box = MeshBuilder.CreateBox("", {});
-
-// Make it pink
-const pink = new StandardMaterial("Pink", scene);
-pink.diffuseColor = new Color3(0.92, 0.48, 0.84);
-box.material = pink;
 var i = 0;
 for (i = 0; i < 5; i++) {
   // Our built-in 'sphere' shape.
-  var sphere = MeshBuilder.CreateSphere(
+  var sphere = MeshBuilder.CreateCylinder(
     "sphere",
-    { diameter: 2, segments: 32 },
+    { diameter: i * 0.2, height: 3, segments: 32 },
     scene
   );
 
-  // Move the sphere upward 1/2 its height
-  sphere.position.y = i;
+  sphere.position.x = i - 2;
 
   if (i === 2) {
     var blueMat = new StandardMaterial("blueMat", scene);
-    blueMat.emissiveColor = new Color3(0, 0, 1);
+    blueMat.diffuseColor = new Color3(0.5, 0.5, 0.6);
     sphere.material = blueMat;
   }
 }
-// And add a light source. Note that it works slightly differently than in
-// three.js. The Vector here is not the light's position, but the direction
-// it points to.
-const light = new DirectionalLight(
+
+//světlo
+const light1 = new DirectionalLight(
   "DirectionalLight",
   new Vector3(-1, -1, -1),
   scene
 );
 
-// Our beforeRender function
+//před vykreslením se vždy provede
 scene.registerBeforeRender(function () {
-  box.rotation.x += 0.03;
-  box.rotation.y += 0.04;
+  //sphere.position.x += 0.03;
+  light1.setDirectionToTarget(sphere.position);
 });
 
-// Register a render loop to repeatedly render the scene
+// povinné vykreslování
 engine.runRenderLoop(function () {
   scene.render();
 });
