@@ -58,11 +58,11 @@ const light1 = new DirectionalLight(
   new Vector3(-1, -1, -1),
   scene
 );
-SceneLoader.ImportMesh("", "public/", "skull.babylon", scene, function (
-  newMeshes
-) {
+SceneLoader.ImportMesh("", "public/", "freza.glb", scene, function (newMeshes) {
   // Set the target of the camera to the first imported mesh
-  camera.target = newMeshes[0];
+  newMeshes[0].scaling = new Vector3(0.1, 0.1, 0.07);
+  newMeshes[0].rotate(new Vector3(-1, 0, 0), Math.PI / 2);
+  newMeshes[0].position.z = -2;
 });
 
 //před vykreslením se vždy provede
