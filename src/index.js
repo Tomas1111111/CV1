@@ -1,7 +1,6 @@
 import "./styles.css"; // keep this here!
 
-// Let's write (or copy-paste 😏) our code below this line ↓
-
+// naimportujte vše co je potřeba z BabylonJS
 import {
   Engine,
   Scene,
@@ -10,72 +9,102 @@ import {
   StandardMaterial,
   DirectionalLight,
   Vector3,
-  Color3
+  Color3,
+  SceneLoader,
+  DeviceOrientationCamera
 } from "@babylonjs/core";
+import "@babylonjs/inspector";
 
-// Get the canvas element and resize it to cover the full window
+//canvas je grafické okno, to rozáhneme přes obrazovku
 const canvas = document.getElementById("renderCanvas");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-// In the previous examples this was called "renderer"
 const engine = new Engine(canvas, true);
 
-// Create the scene
+//scéna neměnit
 const scene = new Scene(engine);
+// Default Environment
 
-// Add a camera called "Camera" 🤓, and move it back 5 units
-const camera = new UniversalCamera("Camera", new Vector3(0, 0, 5), scene);
+//vytoření kamery v pozici -5 (dozadu)
+//const camera = new UniversalCamera("Camera", new Vector3(0, 5, 10), scene);
+//const camera = new UniversalCamera("kamera",new Vector3(1,1,10),scene);
+const camera = new DeviceOrientationCamera(
+  "kamera",
+  new Vector3(1, 1, 10),
+  scene
+);
 
-// Point the camera towards the scene origin
-camera.setTarget(Vector3.Zero());
+//zaměřit kameru do středu
+camera.setTarget(new Vector3(0, 1, 0));
 
-// And finally attach it to the canvas
+//spojení kamery a grafikcého okna
 camera.attachControl(canvas, true);
 
-// Create a 1x1 cube
-// Note: there is an odler method called simply "Mesh". It is recommended
-// to use the newer "MeshBuilder" instead.
-const box = MeshBuilder.CreateBox("", {});
+// var i = 0;
+// for (i = 0; i < 5; i++) {
+//   // Our built-in 'sphere' shape.
+//   var sphere = MeshBuilder.CreateCylinder(
+//     "sphere",
+//     { diameter: i * 0.2, height: 3, segments: 32 },
+//     scene
+//   );
+//   sphere.position.y = 2;
+//   sphere.position.x = i - 2;
 
-// Make it pink
-const pink = new StandardMaterial("Pink", scene);
-pink.diffuseColor = new Color3(0.92, 0.48, 0.84);
-box.material = pink;
+//   if (i === 2) {
+//     var blueMat = new StandardMaterial("blueMat", scene);
+//     blueMat.diffuseColor = new Color3(0.5, 0.5, 0.6);
+//     sphere.material = blueMat;
+//   }
+// }
 var i = 0;
 for (i = 0; i < 5; i++) {
-  // Our built-in 'sphere' shape.
-  var sphere = MeshBuilder.CreateSphere(
-    "sphere",
-    { diameter: 2, segments: 32 },
+  var sphere = MeshBuilder.CreateCylinder(
+    "freza",
+    { diameter: 0.2, height: 3 },
     scene
   );
-
-  // Move the sphere upward 1/2 its height
-  sphere.position.y = i;
-
+  sphere.position.x = i;
   if (i === 2) {
-    var blueMat = new StandardMaterial("blueMat", scene);
-    blueMat.emissiveColor = new Color3(0, 0, 1);
-    sphere.material = blueMat;
+    var Mat = new StandardMaterial("sedy", scene);
+    Mat.diffuseColor = new Color3(0.5, 0.5, 0.6);
+    sphere.material = Mat;
   }
 }
-// And add a light source. Note that it works slightly differently than in
-// three.js. The Vector here is not the light's position, but the direction
-// it points to.
-const light = new DirectionalLight(
+
+//světlo
+const light1 = new DirectionalLight(
   "DirectionalLight",
   new Vector3(-1, -1, -1),
   scene
 );
-
-// Our beforeRender function
-scene.registerBeforeRender(function () {
-  box.rotation.x += 0.03;
-  box.rotation.y += 0.04;
+SceneLoader.ImportMesh("", "public/", "freza.glb", scene, function (newMeshes) {
+  // Set the target of the camera to the first imported mesh
+  newMeshes[0].scaling = new Vector3(0.1, 0.1, 0.07);
+  newMeshes[0].rotate(new Vector3(-1, 0, 0), Math.PI / 2);
+  newMeshes[0].position.z = -2;
 });
 
-// Register a render loop to repeatedly render the scene
+//před vykreslením se vždy provede
+scene.registerBeforeRender(function () {
+  //sphere.position.x += 0.03;
+  light1.setDirectionToTarget(sphere.position);
+});
+
+// povinné vykreslování
 engine.runRenderLoop(function () {
   scene.render();
 });
+const environment1 = scene.createDefaultEnvironment({
+  enableGroundShadow: true
+});
+const xrHelper = scene.createDefaultXRExperienceAsync({
+  // define floor meshes
+  floorMeshes: [environment1.ground]
+});
+environment1.setMainColor(new Color3.FromHexString("#74b9ff"));
+environment1.ground.parent.position.y = 0;
+environment1.ground.position.y = 0;
+
+//scene.debugLayer.show();
